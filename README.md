@@ -1,19 +1,31 @@
 # ES网关查询生成器
 
+提供了更贴近Yii2模型操作的API来查询ES网关数据
+
+[![Latest Stable Version](https://poser.pugx.org/inkime/elasticsearch-query-builder/v/stable.png)](https://packagist.org/packages/inkime/elasticsearch-query-builder)
+[![Total Downloads](https://poser.pugx.org/inkime/elasticsearch-query-builder/downloads.png)](https://packagist.org/packages/inkime/elasticsearch-query-builder)
+
 Composer安装：
 >composer require inkime/elasticsearch-query-builder
 
-使用示例：
+支持API如下：
+- [one](#单条记录)
+- [all](#多条记录)
+- [count](#获取总数)
+
+#### 单条记录
 ~~~
-// 单条记录
 EsModel::find()->index('wx')->one();
-
-// 多条记录
+~~~
+#### 多条记录
+~~~
 EsModel::find()->index('wx')->offset(0)->limit(10)->all();
-
-// 获取总数
+~~~
+#### 获取总数
+~~~
 EsModel::find()->index('weibo')->offset(0)->limit(5)->count();
-
+~~~
+~~~
 // where查询
 EsModel::find()->index('wx')->select('news_uuid')
 ->where(['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'])->one();
