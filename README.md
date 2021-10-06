@@ -12,6 +12,12 @@ Composer安装：
 - [one](#单条记录)
 - [all](#多条记录)
 - [count](#获取总数)
+- [where](#where查询)
+    - [whereNot](#whereNot)
+    - [whereAnd](#whereAnd)
+    - [whereOr](#whereOr)
+    - [whereBetween](#whereBetween)
+    - [whereIn](#whereIn)
 
 #### 单条记录
 ~~~
@@ -25,12 +31,13 @@ EsModel::find()->index('wx')->offset(0)->limit(10)->all();
 ~~~
 EsModel::find()->index('weibo')->offset(0)->limit(5)->count();
 ~~~
+#### where查询
 ~~~
-// where查询
 EsModel::find()->index('wx')->select('news_uuid')
 ->where(['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'])->one();
-
-// whereNot
+~~~
+#### whereNot
+~~~
 EsModel::find()->index('wx')->select('news_uuid')
 ->where(['not', ['news_uuid' => 
     [
@@ -39,19 +46,32 @@ EsModel::find()->index('wx')->select('news_uuid')
     ]
 ]])
 ->one();
-
-// whereAnd
+~~~
+#### whereAnd
+~~~
 EsModel::find()->index('wx')->select('news_uuid,media_name')
 ->where(['and', [
     'news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb',
     'media_name' => '城镇城镇交费'
 ]])->one();
-
-// whereOr
+~~~
+#### whereOr
+~~~
 EsModel::find()->index('wx')->select('news_uuid')
-->where(['or', ['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'], ['media_name' => '城镇城镇交费']])
+->where([
+        'or', 
+        ['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'], 
+        ['media_name' => '城镇城镇交费']
+])->one();
+~~~
+#### whereBetween
+~~~
+EsModel::find()->index('wx')->select('news_is_origin')
+->where(['between', 'news_is_origin', 0, 1])->one();
+~~~
+#### whereIn
+~~~
+EsModel::find()->index('wx')->select('media_name')
+->where(['in', 'media_name', ['爆笑短片', '智慧人生', '', null]])
 ->one();
-
-// whereBetween
-EsModel::find()->index('wx')->select('news_is_origin')->where(['between', 'news_is_origin', 0, 1])->one();
 ~~~
