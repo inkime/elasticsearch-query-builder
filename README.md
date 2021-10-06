@@ -17,7 +17,10 @@ Composer安装：
     - [whereAnd](#whereAnd)
     - [whereOr](#whereOr)
     - [whereBetween](#whereBetween)
+    - [whereNotBetween](#whereNotBetween)
     - [whereIn](#whereIn)
+    - [whereNotIn](#whereNotIn)
+    - [whereRange](#whereRange)
 
 #### 单条记录
 ~~~
@@ -39,39 +42,46 @@ EsModel::find()->index('wx')->select('news_uuid')
 #### whereNot
 ~~~
 EsModel::find()->index('wx')->select('news_uuid')
-->where(['not', ['news_uuid' => 
-    [
-        'b15e02a0bddacc0ee61d51d36d0022eb', 
-        'e698094102c12deb978e35617e72b633'
-    ]
-]])
-->one();
+->where([
+    'not', 
+    ['news_uuid' => ['b15e02a0bddacc0ee61d51d36d0022eb', 'e698094102c12deb978e35617e72b633']]
+])->one();
 ~~~
 #### whereAnd
 ~~~
 EsModel::find()->index('wx')->select('news_uuid,media_name')
-->where(['and', [
-    'news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb',
-    'media_name' => '城镇城镇交费'
-]])->one();
+->where(['and', ['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb','media_name' => '城镇城镇交费']])
+->one();
 ~~~
 #### whereOr
 ~~~
 EsModel::find()->index('wx')->select('news_uuid')
-->where([
-        'or', 
-        ['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'], 
-        ['media_name' => '城镇城镇交费']
-])->one();
+->where(['or', ['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'], ['media_name' => '城镇城镇交费']])
+->one();
 ~~~
 #### whereBetween
 ~~~
+EsModel::find()->index('wx')->select('news_is_origin')->where(['between', 'news_is_origin', 0, 1])
+->one();
+~~~
+#### whereNotBetween
+~~~
 EsModel::find()->index('wx')->select('news_is_origin')
-->where(['between', 'news_is_origin', 0, 1])->one();
+->where(['not between', 'news_comment_count', 10, 100])->one();
 ~~~
 #### whereIn
 ~~~
 EsModel::find()->index('wx')->select('media_name')
-->where(['in', 'media_name', ['爆笑短片', '智慧人生', '', null]])
-->one();
+->where(['in', 'media_name', ['爆笑短片', '智慧人生', '', null]])->one();
+~~~
+#### whereNotIn
+~~~
+EsModel::find()->index('wx')->select('media_name')
+->where(['not in', 'media_name', ['爆笑短片', '智慧人生', '', null]])->one();
+~~~
+#### whereRange
+~~~
+EsModel::find()->index('wx')->select('news_postweek_day')->where(['<', 'news_postweek_day', 3])
+->orderBy('news_postweek_day desc')->one();
+这里操作符支持：<、lt、<=、lte、>、gt、>=、gte
 ~~~
