@@ -21,6 +21,7 @@ Composer安装：
 - [dsl](#dsl)
 - [map](#map)
 - [highlight](#highlight)
+- [collapse](#collapse)
 - [where](#where查询)
     - [whereNot](#whereNot)
     - [whereAnd](#whereAnd)
@@ -71,7 +72,8 @@ EsModel::find()->index('wx')->select('news_uuid')->addSelect(['news_title', 'new
 EsModel::find()->index('wx')
 ->select('news_uuid,news_title,news_posttime,platform')
 ->aggs('platformCount', 'terms', ['field' => 'platform', 'size' => 3, 'order' => ['_count' => 'asc']])
-->addAggs('dateDayCount', 'date_histogram', ['field' => 'news_posttime', 'interval' => 'day', 'format' => 'yyyy-MM-dd', 'min_doc_count' => 0])
+->addAggs('dateDayCount', 'date_histogram', 
+      ['field' => 'news_posttime', 'interval' => 'day', 'format' => 'yyyy-MM-dd', 'min_doc_count' => 0])
 ->limit(5)
 ->query();
 ~~~
@@ -151,6 +153,11 @@ EsModel::find()->index('wx')->select('news_title')->addSelect('news_uuid')
 ->map(['match' => ['news_title' => '补贴']])
 ->highlight(EsModel::highLight([$field])) // 高亮配置
 ->query(); // 仅支持query查询
+~~~
+#### collapse
+~~~
+EsModel::find()->index('wx')->select('news_uuid')->collapse('news_title')
+->where(['media_name' => '城镇城镇交费'])->all();
 ~~~
 #### where查询
 ~~~
