@@ -98,4 +98,22 @@ class InstanceTest extends TestCase
         $this->assertNotEmpty($highlight[$field][0]);
         $this->assertEquals(true, strpos($highlight[$field][0], 'em') !== false);
     }
+
+    public function testList()
+    {
+        $result = EsModel::find()->index(EsModel::$originIndex)->select('news_uuid,news_title,news_origin_url,news_posttime,media_name,news_digest,platform')
+            ->where(['media_field' => '财经'])
+            ->andWhere(['not', ['news_origin_url' => '']])
+            ->map([
+                'bool' => [
+                    'filter' => [
+                        'exists' => ['field' => 'news_origin_url']
+                    ]
+                ]
+            ])
+            ->orderBy('news_posttime desc')
+            ->limit(15)
+            ->all();
+        $this->assertNotEmpty($result[0]['news_origin_url']);
+    }
 }

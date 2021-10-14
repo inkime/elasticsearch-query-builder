@@ -45,18 +45,20 @@ class QueryBuilder
         }
 
         // combine query with where
-        $conditionals = [];
         $whereQuery = $this->buildQueryFromWhere($query->where);
         if ($whereQuery) {
-            $conditionals[] = $whereQuery;
+            $parts['query'] = ['bool' => ['must' => $whereQuery]];
         }
         if ($query->map) {
-            $conditionals[] = $query->map;
-        }
-        if (count($conditionals) === 2) {
-            $parts['query'] = ['bool' => ['must' => $conditionals]];
-        } elseif (count($conditionals) === 1) {
-            $parts['query'] = reset($conditionals);
+            $boolCondition = [];
+            if (isset($query->map['bool'])) {
+                $boolCondition = $query->map['bool'];
+                unset($query->map['bool']);
+            }
+            if (isset($parts['query']['bool'])) {
+                $parts['query']['bool'] = array_merge($parts['query']['bool'], $boolCondition);
+            }
+            $parts['query'] = array_merge($parts['query'], $query->map);
         }
 
         if (!empty($query->highlight)) {

@@ -11,6 +11,8 @@ class EsModel extends ActiveRecord
 
     public static $authorization = 'Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiLoiIbmg4U1LjAiLCJpc3MiOiJlY2hpc2FuIiwiZXhwIjo0NzQ0NjYxOTgxLCJpYXQiOjE1OTEwNjE5ODEsInJvbCI6IlJPTEVfVVNFUiJ9.AOdhiZ36ItW6mMO9CnGLaPVi7HBF5c-J6-hbaH4s96diMyGG3QQJfDSLu1QeX5u5_5p11c3GBmXzMdHcEDP1tg';
 
+    public static $originIndex = 'web,aq,weibo,wx,app,bbs,journal,media_ifeng,media_sohu,media_wangyi,media_eastday,media_btime,media_toutiao,media_yidianzixun,media_chejia,media_yiche,media_qq,media_people,video,comment';
+
     /**
      * 文章发布时间筛选，开始时间和结束时间不需要同时存在
      * @param string $field
