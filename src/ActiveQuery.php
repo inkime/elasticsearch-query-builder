@@ -24,6 +24,12 @@ class ActiveQuery extends Query
             'url' => $modelClass::$gateway,
             'authorization' => $modelClass::$authorization
         ]);
+        try {
+            $instance = new \ReflectionClass($this->modelClass);
+            $method = $instance->getMethod('logRecord');
+            $initConfig = array_merge($initConfig, ['logRecord' => $method]);
+        } catch (\ReflectionException $e) {
+        }
         $db = $modelClass::getDb($initConfig);
 
         $commandConfig['queryParts'] = $db->getQueryBuilder()->build($this);

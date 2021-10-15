@@ -28,6 +28,14 @@ class ActiveRecord
     ];
 
     /**
+     * 自定义记录日志
+     */
+    protected function logRecord()
+    {
+        // xxx
+    }
+
+    /**
      * @return ActiveQuery 创建 [[ActiveQuery]] 实例
      */
     public static function find()

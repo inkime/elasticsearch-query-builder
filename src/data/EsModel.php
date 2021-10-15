@@ -13,6 +13,10 @@ class EsModel extends ActiveRecord
 
     public static $originIndex = 'web,aq,weibo,wx,app,bbs,journal,media_ifeng,media_sohu,media_wangyi,media_eastday,media_btime,media_toutiao,media_yidianzixun,media_chejia,media_yiche,media_qq,media_people,video,comment';
 
+    public function logRecord()
+    {
+    }
+
     /**
      * 文章发布时间筛选，开始时间和结束时间不需要同时存在
      * @param string $field

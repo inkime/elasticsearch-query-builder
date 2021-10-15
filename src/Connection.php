@@ -108,6 +108,7 @@ class Connection
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $errno = curl_errno($ch);
+        $this->logRecord->invoke(new $this->logRecord->class());
         return json_decode($response, true);
     }
 }
