@@ -45,6 +45,7 @@ class QueryBuilder
         }
 
         // combine query with where
+        $parts['query'] = [];
         $whereQuery = $this->buildQueryFromWhere($query->where);
         if ($whereQuery) {
             $parts['query'] = ['bool' => $whereQuery];

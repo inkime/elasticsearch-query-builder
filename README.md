@@ -9,6 +9,7 @@ Composer安装：
 >composer require inkime/elasticsearch-query-builder
 
 支持API如下：
+- [query](#常规查询)
 - [one](#单条记录)
 - [all](#多条记录)
 - [count](#获取总数)
@@ -20,6 +21,7 @@ Composer安装：
 - [indexBy](#indexBy)
 - [dsl](#dsl)
 - [map](#map)
+- [addMap](#addMap)
 - [highlight](#highlight)
 - [collapse](#collapse)
 - [where](#where查询)
@@ -40,6 +42,12 @@ Composer安装：
 - offset
 - limit
 
+#### 常规查询
+~~~
+$result = EsModel::find()->index('wx')->query();
+$count = $result['count'];
+$list = $result['list'];
+~~~
 #### 单条记录
 ~~~
 EsModel::find()->index('wx')->one();
@@ -115,18 +123,27 @@ EsModel::find()->index('wx')->select('news_uuid')
 ~~~
 #### map
 ~~~
-自定义DSL语句
+自定义DSL语句，map或者addMap操作仅仅支持bool查询，bool键名支持省略
+例如：['must' => [['match' => ['news_title' => '补贴']]]]
+系统会补全：['bool' => ['must' => [['match' => ['news_title' => '补贴']]]]]
 EsModel::find()->index('wx')->select('news_is_origin')->addSelect('news_uuid')
 ->where(['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'])
 ->map([
     'bool' => [
         'filter' => [
-            'bool' => ['must_not' => [['term' => ['news_is_origin' => '']]]],
             'exists' => ['field' => 'news_is_origin']
         ]
     ]
 ]) // 自定义DSL
 ->one();
+~~~
+#### addMap
+~~~
+自定义DSL语句
+EsModel::find()->index('wx')->select('news_title,news_uuid')
+->where(['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'])
+->addMap(['must' => [['match' => ['news_title' => '补贴']]]])
+->query();
 ~~~
 #### highlight
 ~~~
@@ -150,7 +167,6 @@ public static function highLight($fields = [], $pre_tags = '<em>', $post_tags = 
 }
 EsModel::find()->index('wx')->select('news_title')->addSelect('news_uuid')
 ->where(['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'])
-->map(['match' => ['news_title' => '补贴']])
 ->highlight(EsModel::highLight([$field])) // 高亮配置
 ->query(); // 仅支持query查询
 ~~~
