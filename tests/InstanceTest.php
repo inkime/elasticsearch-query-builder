@@ -13,11 +13,10 @@ class InstanceTest extends TestCase
         $field = 'news_posttime';
         $begin_time = '2021-09-01';
         $end_time = '2021-09-01';
-        // {"_source":["news_posttime"],"size":1,"query":{"bool":{"must":[{"range":{"news_posttime":{"gte":"2021-09-01 00:00:00"}}},{"range":{"news_posttime":{"lte":"2021-09-01 23:59:59"}}}]}}}
         $result = EsModel::find()->index('wx')->select($field)
             ->where(EsModel::range($field, $begin_time, $end_time))
             ->one();
-        $news_posttime = strtotime($result[$field]);
+        $news_posttime = strtotime($result[$field]); // echo $news_posttime;exit;
         $this->assertLessThanOrEqual(strtotime($end_time . ' 23:59:59'), $news_posttime);
         $this->assertGreaterThanOrEqual(strtotime($begin_time), $news_posttime);
     }
@@ -27,7 +26,6 @@ class InstanceTest extends TestCase
         $field = 'news_emotion';
         $emotions = ['正面'];
         $emotions_1 = '反面,中性';
-        // {"_source":["news_emotion"],"size":1,"query":{"bool":{"should":[{"terms":{"news_emotion":["正面"]}},{"terms":{"news_emotion":["反面","中性"]}}]}}}
         $result = EsModel::find()->index('wx')->select($field)
             ->where(EsModel::emotion($emotions))
             ->orWhere(EsModel::emotion($emotions_1))
@@ -40,7 +38,6 @@ class InstanceTest extends TestCase
     {
         $field = 'news_is_origin';
         $field_1 = ['news_reposts_count', 'news_comment_count', 'news_like_count'];
-        // {"_source":["news_is_origin","news_reposts_count","news_comment_count","news_like_count"],"size":2,"aggregations":{"group":{"terms":{"field":"news_is_origin"},"aggs":{"news_reposts_count":{"sum":{"field":"news_reposts_count"}},"news_comment_count":{"sum":{"field":"news_comment_count"}},"news_like_count":{"sum":{"field":"news_like_count"}}}}}}
         $result = EsModel::find()->index('wx')->select($field)
             ->addSelect($field_1)
             ->aggregations(EsModel::groupMultiSum($field, $field_1))
@@ -75,7 +72,6 @@ class InstanceTest extends TestCase
         $field = 'news_is_origin';
         $field_1 = 'news_uuid';
         $value = 'b15e02a0bddacc0ee61d51d36d0022eb';
-        // {"_source":["news_is_origin","new_uuid"],"size":1,"query":{"bool":{"must":[{"bool":{"must":[{"term":{"new_uuid":"b15e02a0bddacc0ee61d51d36d0022eb"}}]}},{"bool":{"filter":[{"bool":{"must_not":[{"term":{"news_is_origin":""}}]}},{"exists":{"field":"news_is_origin"}}]}}]}}}
         $result = EsModel::find()->index('wx')->select($field)->addSelect($field_1)
             ->where([$field_1 => $value])
             ->map(EsModel::exists($field)) // 自定义DSL
@@ -88,10 +84,9 @@ class InstanceTest extends TestCase
         $field = 'news_title';
         $field_1 = 'news_uuid';
         $value = 'b15e02a0bddacc0ee61d51d36d0022eb';
-        // {"_source":["news_title","news_uuid"],"size":1,"query":{"bool":{"must":[{"bool":{"must":[{"term":{"news_uuid":"b15e02a0bddacc0ee61d51d36d0022eb"}}]}},{"match":{"news_title":"补贴"}}]}},"highlight":{"require_field_match":false,"pre_tags":["<em>"],"post_tags":["<\/em>"],"fields":{"news_title":{"number_of_fragments":0}}}}
         $result = EsModel::find()->index('wx')->select($field)->addSelect($field_1)
             ->where([$field_1 => $value])
-            ->map(['match' => [$field => '补贴']])
+            ->map(['must' => [['match' => [$field => '补贴']]]])
             ->highlight(EsModel::highLight([$field])) // 高亮配置
             ->query();
         $highlight = $result['hits']['hits'][0]['highlight'];

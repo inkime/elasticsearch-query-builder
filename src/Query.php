@@ -17,13 +17,13 @@ class Query
     public $layout;
 
     /* @var array */
-    public $aggregations;
+    public $aggregations = [];
 
     /* @var array */
-    public $map;
+    public $map = [];
 
     /* @var array */
-    public $highlight;
+    public $highlight = [];
 
     public function all()
     {
@@ -94,6 +94,14 @@ class Query
     {
         if ($condition) {
             $this->map = $condition;
+        }
+        return $this;
+    }
+
+    public function addMap($condition = [])
+    {
+        if ($condition) {
+            $this->map = array_merge($this->map, $condition);
         }
         return $this;
     }

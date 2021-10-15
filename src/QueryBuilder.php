@@ -47,18 +47,10 @@ class QueryBuilder
         // combine query with where
         $whereQuery = $this->buildQueryFromWhere($query->where);
         if ($whereQuery) {
-            $parts['query'] = ['bool' => ['must' => $whereQuery]];
+            $parts['query'] = ['bool' => $whereQuery];
         }
         if ($query->map) {
-            $boolCondition = [];
-            if (isset($query->map['bool'])) {
-                $boolCondition = $query->map['bool'];
-                unset($query->map['bool']);
-            }
-            if (isset($parts['query']['bool'])) {
-                $parts['query']['bool'] = array_merge($parts['query']['bool'], $boolCondition);
-            }
-            $parts['query'] = array_merge($parts['query'], $query->map);
+            $parts['query'] = $this->mergeQuery($parts['query'], $query->map);
         }
 
         if (!empty($query->highlight)) {
@@ -105,9 +97,32 @@ class QueryBuilder
         return $sorts;
     }
 
+    /**
+     * 合并查询条件
+     * @param $query
+     * @param $appendQuery
+     * @return array
+     */
+    protected function mergeQuery($query, $appendQuery)
+    {
+        if (!isset($appendQuery['bool'])) {
+            $appendQuery = ['bool' => $appendQuery];
+        }
+        // 仅取值bool条件
+        $appendQuery = ['bool' => $appendQuery['bool']];
+        return array_merge_recursive($query, $appendQuery);
+    }
+
     public function buildQueryFromWhere($condition)
     {
-        return $this->buildCondition($condition);
+        $condition = $this->buildCondition($condition);
+        foreach ($condition as $key => $item) {
+            if ($key == 'range') {
+                $condition['must'] = [$key => $item];
+                unset($condition[$key]);
+            }
+        }
+        return $condition;
     }
 
     /**
@@ -158,6 +173,15 @@ class QueryBuilder
         }
     }
 
+    private function completeQuery($condition)
+    {
+        $key = array_keys($condition)[0];
+        if (in_array($key, ['must', 'must_not', 'should', 'filter', 'minimum_should_match'])) {
+            return ['bool' => $condition];
+        }
+        return $condition;
+    }
+
     private function buildHashCondition($condition)
     {
         $parts = $emptyFields = [];
@@ -177,7 +201,7 @@ class QueryBuilder
         if ($emptyFields) {
             $query['must_not'] = $emptyFields;
         }
-        return ['bool' => $query];
+        return $query;
     }
 
     private function buildNotCondition($operator, $operands)
@@ -188,13 +212,11 @@ class QueryBuilder
 
         $operand = reset($operands);
         if (is_array($operand)) {
-            $operand = $this->buildCondition($operand);
+            $operand = $this->completeQuery($this->buildCondition($operand));
         }
 
         return [
-            'bool' => [
-                'must_not' => $operand,
-            ],
+            'must_not' => $operand
         ];
     }
 
@@ -211,21 +233,13 @@ class QueryBuilder
 
         foreach ($operands as $operand) {
             if (is_array($operand)) {
-                $operand = $this->buildCondition($operand);
+                $operand = $this->completeQuery($this->buildCondition($operand));
             }
             if (!empty($operand)) {
                 $parts[] = $operand;
             }
         }
-        if ($parts) {
-            return [
-                'bool' => [
-                    $clause => $parts,
-                ]
-            ];
-        } else {
-            return null;
-        }
+        return [$clause => $parts];
     }
 
     private function buildBetweenCondition($operator, $operands)
@@ -240,7 +254,9 @@ class QueryBuilder
         }
         $filter = ['range' => [$column => ['gte' => $value1, 'lte' => $value2]]];
         if ($operator === 'not between') {
-            $filter = ['bool' => ['must_not' => $filter]];
+            $filter = ['must_not' => $filter];
+        } else {
+            $filter = ['must' => $filter];
         }
 
         return $filter;
@@ -257,7 +273,7 @@ class QueryBuilder
         $values = (array)$values;
 
         if (empty($values) || $column === []) {
-            return $operator === 'in' ? ['bool' => ['must_not' => [['match_all' => new \stdClass()]]]] : []; // this condition is equal to WHERE false
+            return $operator === 'in' ? ['must_not' => [['match_all' => new \stdClass()]]] : []; // this condition is equal to WHERE false
         }
 
         if (is_array($column)) {
@@ -278,21 +294,17 @@ class QueryBuilder
         }
         if (empty($values) && $canBeNull) {
             $filter = [
-                'bool' => [
-                    'must_not' => [
-                        'exists' => ['field' => $column],
-                    ]
+                'must_not' => [
+                    'exists' => ['field' => $column],
                 ]
             ];
         } else {
             $filter = ['terms' => [$column => array_values($values)]];
             if ($canBeNull) {
                 $filter = [
-                    'bool' => [
-                        'should' => [
-                            ['bool' => ['must' => $filter]],
-                            ['bool' => ['must_not' => ['exists' => ['field' => $column]]]],
-                        ]
+                    'should' => [
+                        ['bool' => ['must' => $filter]],
+                        ['bool' => ['must_not' => ['exists' => ['field' => $column]]]],
                     ]
                 ];
             }
@@ -300,9 +312,7 @@ class QueryBuilder
 
         if ($operator === 'not in') {
             $filter = [
-                'bool' => [
-                    'must_not' => $filter,
-                ],
+                'must_not' => ['bool' => $filter]
             ];
         }
 
@@ -310,11 +320,11 @@ class QueryBuilder
     }
 
     /**
-     * Builds a half-bounded range condition
-     * (for "gt", ">", "gte", ">=", "lt", "<", "lte", "<=" operators)
+     * 区间比较
+     * 支持操作数："gt", ">", "gte", ">=", "lt", "<", "lte", "<="
      * @param string $operator
      * @param array $operands
-     * @return array Filter expression
+     * @return array
      */
     private function buildHalfBoundedRangeCondition($operator, $operands)
     {
@@ -340,14 +350,12 @@ class QueryBuilder
             throw new Exception("Operator '$operator' is not implemented.");
         }
 
-        $filter = [
+        return [
             'range' => [
                 $column => [
                     $range_operator => $value
                 ]
             ]
         ];
-
-        return $filter;
     }
 }

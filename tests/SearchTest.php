@@ -56,9 +56,7 @@ class SearchTest extends TestCase
         $condition = [$field => $value];
         // 多值
         $condition_1 = [$field => [$value, $value_1]];
-        // {"_source":["news_uuid"],"size":1,"query":{"bool":{"must_not":{"bool":{"must":[{"term":{"news_uuid":"b15e02a0bddacc0ee61d51d36d0022eb"}}]}}}}}
         $result = EsModel::find()->index('wx')->select($field)->where(['not', $condition])->one();
-        // {"_source":["news_uuid"],"size":1,"query":{"bool":{"must_not":{"bool":{"must":[{"terms":{"news_uuid":["b15e02a0bddacc0ee61d51d36d0022eb","e698094102c12deb978e35617e72b633"]}}]}}}}}
         $result_1 = EsModel::find()->index('wx')->select($field)->where(['not', $condition_1])->one();
         $this->assertNotEquals($value, $result[$field]);
         $this->assertNotEquals($value, $result_1[$field]);
@@ -73,9 +71,7 @@ class SearchTest extends TestCase
         $value_1 = '城镇城镇交费';
         $condition = [$field => $value];
         $condition_1 = array_merge($condition, [$field_1 => $value_1]);
-        // {"_source":["news_uuid"],"size":1,"query":{"bool":{"must":[{"bool":{"must":[{"term":{"news_uuid":"b15e02a0bddacc0ee61d51d36d0022eb"}}]}}]}}}
         $result = EsModel::find()->index('wx')->select($field)->where(['and', $condition])->one();
-        // {"_source":["news_uuid","media_name"],"size":1,"query":{"bool":{"must":[{"bool":{"must":[{"term":{"news_uuid":"b15e02a0bddacc0ee61d51d36d0022eb"}},{"term":{"media_name":"城镇城镇交费"}}]}}]}}}
         $result_1 = EsModel::find()->index('wx')->select($field . ',' . $field_1)->where(['and', $condition_1])->one();
         // 与上面的查询结果相同
         $result_2 = EsModel::find()->index('wx')
@@ -101,11 +97,8 @@ class SearchTest extends TestCase
         $condition_1 = [$field => [$value, $value_1]];
         // Key不同，Value中需要分别指定Key，以下是演示
         $condition_2 = ['or', [$field => $value], [$field => $value_1]];
-        // {"_source":["news_uuid"],"size":1,"query":{"bool":{"should":[{"bool":{"must":[{"term":{"news_uuid":"b15e02a0bddacc0ee61d51d36d0022eb"}}]}}]}}}
         $result = EsModel::find()->index('wx')->select($field)->where(['or', $condition])->one();
-        // {"_source":["news_uuid"],"query":{"bool":{"should":[{"bool":{"must":[{"terms":{"news_uuid":["b15e02a0bddacc0ee61d51d36d0022eb","e698094102c12deb978e35617e72b633"]}}]}}]}}}
         $result_1 = EsModel::find()->index('wx')->select($field)->where(['or', $condition_1])->indexBy($field)->all();
-        // {"_source":["news_uuid"],"query":{"bool":{"should":[{"bool":{"must":[{"term":{"news_uuid":"b15e02a0bddacc0ee61d51d36d0022eb"}}]}},{"bool":{"must":[{"term":{"news_uuid":"e698094102c12deb978e35617e72b633"}}]}}]}}}
         $result_2 = EsModel::find()->index('wx')->select($field)->where($condition_2)->indexBy($field)->all();
         // 与上面的查询结果相同
         $result_3 = EsModel::find()->index('wx')
@@ -128,7 +121,6 @@ class SearchTest extends TestCase
         $field = 'news_is_origin';
         $value = '0';
         $value_1 = '1';
-        // {"_source":["news_is_origin"],"size":1,"query":{"range":{"news_is_origin":{"gte":"0","lte":"1"}}}}
         $result = EsModel::find()->index('wx')->select($field)->where(['between', $field, $value, $value_1])->one();
         $this->assertGreaterThanOrEqual($value, $result[$field]);
         $this->assertLessThanOrEqual($value_1, $result[$field]);
@@ -139,7 +131,6 @@ class SearchTest extends TestCase
         $field = 'news_comment_count';
         $value = '10';
         $value_1 = '100';
-        // {"_source":["news_comment_count"],"size":1,"query":{"bool":{"must_not":{"range":{"news_comment_count":{"gte":"10","lte":"100"}}}}}}
         $result = EsModel::find()->index('wx')->select($field)->where(['not between', $field, $value, $value_1])->one();
         $this->assertEquals(0, $result[$field] <= $value_1 && $result[$field] >= $value);
     }
@@ -150,9 +141,7 @@ class SearchTest extends TestCase
         // 该字段不存在或者为NULL
         $value = [null];
         $value_1 = ['爆笑短片', '智慧人生', '', null];
-        // {"_source":["media_name"],"size":1,"query":{"bool":{"must_not":{"exists":{"field":"media_name"}}}}}
         $result = EsModel::find()->index('wx')->select($field)->where(['in', $field, $value])->one();
-        // {"_source":["media_name"],"size":1,"query":{"bool":{"should":[{"bool":{"must":{"terms":{"media_name":["爆笑短片","智慧人生",""]}}}},{"bool":{"must_not":{"exists":{"field":"media_name"}}}}]}}}
         $result_1 = EsModel::find()->index('wx')->select($field)->where(['in', $field, $value_1])->one();
         $this->assertEquals(false, $result);
         $this->assertEquals(true, in_array($result_1[$field], $value_1));
@@ -162,7 +151,6 @@ class SearchTest extends TestCase
     {
         $field = 'media_name';
         $value = ['爆笑短片', '智慧人生', '', null];
-        // {"_source":["media_name"],"size":1,"query":{"bool":{"must_not":{"bool":{"should":[{"bool":{"must":{"terms":{"media_name":["爆笑短片","智慧人生",""]}}}},{"bool":{"must_not":{"exists":{"field":"media_name"}}}}]}}}}}
         $result = EsModel::find()->index('wx')->select($field)->where(['not in', $field, $value])->one();
         $this->assertEquals(true, !in_array($result[$field], $value));
     }
@@ -172,16 +160,12 @@ class SearchTest extends TestCase
         $field = 'news_postweek_day';
         $value = 3;
         $value_1 = 5;
-        // {"_source":["news_postweek_day"],"size":1,"query":{"range":{"news_postweek_day":{"lt":3}}},"sort":{"news_postweek_day":{"order":"desc"}}}
         $result = EsModel::find()->index('wx')->select($field)->where(['<', $field, $value])->orderBy($field . ' desc')->one();
         $result_1 = EsModel::find()->index('wx')->select($field)->where(['lt', $field, $value])->orderBy($field . ' desc')->one();
-        // {"_source":["news_postweek_day"],"size":1,"query":{"range":{"news_postweek_day":{"lte":3}}},"sort":{"news_postweek_day":{"order":"desc"}}}
         $result_2 = EsModel::find()->index('wx')->select($field)->where(['<=', $field, $value])->orderBy($field . ' desc')->one();
         $result_3 = EsModel::find()->index('wx')->select($field)->where(['lte', $field, $value])->orderBy($field . ' desc')->one();
-        // {"_source":["news_postweek_day"],"size":1,"query":{"range":{"news_postweek_day":{"gt":5}}},"sort":{"news_postweek_day":{"order":"asc"}}}
         $result_4 = EsModel::find()->index('wx')->select($field)->where(['>', $field, $value_1])->orderBy($field . ' asc')->one();
         $result_5 = EsModel::find()->index('wx')->select($field)->where(['gt', $field, $value_1])->orderBy($field . ' asc')->one();
-        // {"_source":["news_postweek_day"],"size":1,"query":{"range":{"news_postweek_day":{"gte":5}}},"sort":{"news_postweek_day":{"order":"asc"}}}
         $result_6 = EsModel::find()->index('wx')->select($field)->where(['>=', $field, $value_1])->orderBy($field . ' asc')->one();
         $result_7 = EsModel::find()->index('wx')->select($field)->where(['gte', $field, $value_1])->orderBy($field . ' asc')->one();
         $this->assertLessThan($value, $result[$field]);
@@ -214,7 +198,6 @@ class SearchTest extends TestCase
         $field = 'news_title';
         $map = ['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'];
         $obj = EsModel::find()->index('wx')->select($field)->where($map)->andFilterWhere([]);
-        // {"_source":["news_title","news_uuid","media_name"],"size":1,"query":{"bool":{"must":[{"bool":{"must":[{"term":{"news_uuid":"b15e02a0bddacc0ee61d51d36d0022eb"}}]}},{"bool":{"must":[{"bool":{"must":[{"term":{"media_name":"城镇城镇交费"}}]}}]}}]}}}
         $result = EsModel::find()->index('wx')->select($field)
             ->addSelect('news_uuid,media_name')
             ->where($map)
@@ -230,7 +213,6 @@ class SearchTest extends TestCase
         $field = 'news_title';
         $map = ['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'];
         $obj = EsModel::find()->index('wx')->select($field)->where($map)->orFilterWhere([]);
-        // {"_source":["news_title","news_uuid","media_name","news_posttime"],"size":1,"query":{"bool":{"should":[{"bool":{"must":[{"term":{"news_uuid":"b15e02a0bddacc0ee61d51d36d0022eb"}}]}},{"bool":{"must":[{"bool":{"must":[{"term":{"media_name":"城镇城镇交费"}},{"term":{"news_posttime":"2021-09-01 19:00:00"}}]}}]}}]}}}
         $result = EsModel::find()->index('wx')->select($field)
             ->addSelect('news_uuid,media_name,news_posttime')
             ->where($map)
