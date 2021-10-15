@@ -44,9 +44,7 @@ class InstanceTest extends TestCase
             ->limit(2)
             ->query();
 
-        $publish_news_num = !empty($result['hits']) ? $result['hits']['total'] : 0;
         $aggs = !empty($result['aggregations']) ? $result['aggregations']['group']['buckets'] : [];
-
         $repost_count = $comment_count = $like_count = $origin_repost_count = $origin_comment_count = $origin_news_num = $origin_like_count = 0;
 
         // 统计：转发数、评论数、点赞数，原创文章数、原创转发数、原创评论数、原创点赞数
@@ -89,7 +87,7 @@ class InstanceTest extends TestCase
             ->map(['must' => [['match' => [$field => '补贴']]]])
             ->highlight(EsModel::highLight([$field])) // 高亮配置
             ->query();
-        $highlight = $result['hits']['hits'][0]['highlight'];
+        $highlight = $result['list'][0]['highlight'];
         $this->assertNotEmpty($highlight[$field][0]);
         $this->assertEquals(true, strpos($highlight[$field][0], 'em') !== false);
     }

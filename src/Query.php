@@ -68,6 +68,15 @@ class Query
         if (isset($result['output'])) {
             return $result['output'];
         }
+
+        $result['count'] = $result['hits']['total'];
+        if (!empty($result['hits']['hits'])) {
+            $result['list'] = $this->populate($result['hits']['hits']);
+        } else {
+            $result['list'] = [];
+        }
+
+        unset($result['took'], $result['hits'], $result['timed_out'], $result['_shards']);
         return $result;
     }
 
@@ -192,7 +201,7 @@ class Query
     public function populate($rows)
     {
         array_walk($rows, function (&$v) {
-            $v = $v['_source'];
+            $v = array_merge($v['_source'], ['highlight' => $v['highlight']]);
         });
         if ($this->indexBy === null) {
             return $rows;
