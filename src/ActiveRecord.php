@@ -28,9 +28,11 @@ class ActiveRecord
     ];
 
     /**
-     * 自定义记录日志
+     * 自定义日志操作
+     * @param array $request 请求值
+     * @param array $response 返回值
      */
-    protected function logRecord()
+    protected function logRecord($request, $response)
     {
         // xxx
     }

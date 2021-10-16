@@ -4,6 +4,8 @@
 
 [![Latest Stable Version](https://poser.pugx.org/inkime/elasticsearch-query-builder/v/stable.png)](https://packagist.org/packages/inkime/elasticsearch-query-builder)
 [![Total Downloads](https://poser.pugx.org/inkime/elasticsearch-query-builder/downloads.png)](https://packagist.org/packages/inkime/elasticsearch-query-builder)
+[![License](http://poser.pugx.org/inkime/elasticsearch-query-builder/license)](https://packagist.org/packages/inkime/elasticsearch-query-builder)
+[![PHP Version Require](http://poser.pugx.org/inkime/elasticsearch-query-builder/require/php)](https://packagist.org/packages/inkime/elasticsearch-query-builder)
 
 Composer安装：
 >composer require inkime/elasticsearch-query-builder
@@ -41,6 +43,32 @@ Composer安装：
 - orderBy / addOrderBy
 - offset
 - limit
+
+自定义日志操作：
+~~~
+<?php
+namespace webapi\es;
+use inkime\elasticsearch\ActiveRecord;
+use inkime\elasticsearch\Query;
+use webapi\services\LogService;
+
+class SdModel extends ActiveRecord
+{
+    public static $gateway = 'xxx';
+
+    public static $authorization = 'xxx';
+
+    public function logRecord($request, $response)
+    {
+        // 使用1，记录Log日志
+        $logFile = \Yii::getAlias('@runtime/logs/es.log');
+        file_put_contents($logFile, var_export($request, true) . PHP_EOL, FILE_APPEND);
+        file_put_contents($logFile, var_export($response, true) . PHP_EOL, FILE_APPEND);
+        // 使用2，持久化存DB
+        (new LogService())->saveSysLog(var_export($request, true));
+    }
+}
+~~~
 
 #### 常规查询
 ~~~

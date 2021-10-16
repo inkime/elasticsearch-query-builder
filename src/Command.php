@@ -35,7 +35,7 @@ class Command
             $query = '{}';
         }
         if (is_array($query)) {
-            $query = json_encode($query, JSON_UNESCAPED_UNICODE);
+            $query = json_encode($query, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
 
         return $this->db->post($query);
