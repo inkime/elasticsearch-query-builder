@@ -134,7 +134,7 @@ EsModel::find()->index('wx')->select('news_is_origin')
 #### indexBy
 ~~~
 EsModel::find()->index('wx')->select('news_uuid')->indexBy('news_uuid')->limit(5)->all();
-支持回调函数
+支持匿名函数
 $field = 'news_uuid';
 $secretStr = 'qingbo#$%t2000';
 EsModel::find()->index('wx')->select($field)->indexBy(function($v) use ($field, $secretStr) { 
