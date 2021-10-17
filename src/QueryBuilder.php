@@ -45,13 +45,12 @@ class QueryBuilder
         }
 
         // combine query with where
-        $parts['query'] = [];
         $whereQuery = $this->buildQueryFromWhere($query->where);
         if ($whereQuery) {
             $parts['query'] = ['bool' => $whereQuery];
         }
         if ($query->map) {
-            $parts['query'] = array_merge_recursive($parts['query'], $query->map);
+            $parts['query'] = $parts['query'] ? array_merge_recursive($parts['query'], $query->map) : $query->map;
         }
 
         if (!empty($query->highlight)) {

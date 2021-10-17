@@ -13,8 +13,9 @@ class EsModel extends ActiveRecord
 
     public static $originIndex = 'web,aq,weibo,wx,app,bbs,journal,media_ifeng,media_sohu,media_wangyi,media_eastday,media_btime,media_toutiao,media_yidianzixun,media_chejia,media_yiche,media_qq,media_people,video,comment';
 
-    public function logRecord()
+    public function logRecord($request, $response)
     {
+        // xxx
     }
 
     /**
