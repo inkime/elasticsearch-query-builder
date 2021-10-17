@@ -96,22 +96,18 @@ class Query
     }
 
     /**
-     * @param array $condition 自定义组装查询条件
+     * @param mixed $condition 自定义组装查询条件
      * @return $this
      */
-    public function map($condition = [])
+    public function map($condition)
     {
-        if ($condition) {
-            $this->map = $condition;
-        }
+        $this->map = $this->normalizeMap($condition);
         return $this;
     }
 
-    public function addMap($condition = [])
+    public function addMap($condition)
     {
-        if ($condition) {
-            $this->map = array_merge($this->map, $condition);
-        }
+        $this->map = array_merge_recursive($this->map, $this->normalizeMap($condition));
         return $this;
     }
 
@@ -158,6 +154,16 @@ class Query
         }
         $this->select = array_merge($this->select, $this->normalizeSelect($columns));
         return $this;
+    }
+
+    protected function normalizeMap($condition)
+    {
+        if ($condition instanceof \Closure) {
+            $condition = $condition();
+        }
+        $condition = (array)$condition;
+        $condition = isset($condition['bool']) ? $condition['bool'] : $condition;
+        return ['bool' => $condition];
     }
 
     protected function normalizeSelect($columns)

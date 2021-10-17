@@ -154,6 +154,7 @@ EsModel::find()->index('wx')->select('news_uuid')
 自定义DSL语句，map或者addMap操作仅仅支持bool查询，bool键名支持省略
 例如：['must' => [['match' => ['news_title' => '补贴']]]]
 系统会补全：['bool' => ['must' => [['match' => ['news_title' => '补贴']]]]]
+使用1：
 EsModel::find()->index('wx')->select('news_is_origin')->addSelect('news_uuid')
 ->where(['news_uuid' => 'b15e02a0bddacc0ee61d51d36d0022eb'])
 ->map([
@@ -164,6 +165,10 @@ EsModel::find()->index('wx')->select('news_is_origin')->addSelect('news_uuid')
     ]
 ]) // 自定义DSL
 ->one();
+使用2，支持匿名函数：
+$esModel->andWhere(['not', ['media_name' => '']])->map(function () use ($index) {
+     return ['must' => [['term' => ['news_uuid' => $index . '0adb6d83ab00b225c370c0e957f658a8']]]];
+})
 ~~~
 #### addMap
 ~~~

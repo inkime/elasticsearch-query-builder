@@ -51,7 +51,7 @@ class QueryBuilder
             $parts['query'] = ['bool' => $whereQuery];
         }
         if ($query->map) {
-            $parts['query'] = $this->mergeQuery($parts['query'], $query->map);
+            $parts['query'] = array_merge_recursive($parts['query'], $query->map);
         }
 
         if (!empty($query->highlight)) {
@@ -96,22 +96,6 @@ class QueryBuilder
             $sorts[$column] = ['order' => $direction];
         }
         return $sorts;
-    }
-
-    /**
-     * 合并查询条件
-     * @param $query
-     * @param $appendQuery
-     * @return array
-     */
-    protected function mergeQuery($query, $appendQuery)
-    {
-        if (!isset($appendQuery['bool'])) {
-            $appendQuery = ['bool' => $appendQuery];
-        }
-        // 仅取值bool条件
-        $appendQuery = ['bool' => $appendQuery['bool']];
-        return array_merge_recursive($query, $appendQuery);
     }
 
     public function buildQueryFromWhere($condition)
