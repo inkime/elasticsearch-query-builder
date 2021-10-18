@@ -32,7 +32,7 @@ class ActiveRecord
      * @param array $request 请求值
      * @param array $response 返回值
      */
-    protected function logRecord($request, $response)
+    public function logRecord($request, $response)
     {
         // xxx
     }
