@@ -1,4 +1,4 @@
-<phpunit colors="true" bootstrap="src/bootstrap.php">
+<phpunit colors="true" bootstrap="tests/bootstrap.php">
     <testsuites>
         <testsuite name="RPC-TEST">
             <directory suffix="Test.php">tests</directory>
