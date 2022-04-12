@@ -44,6 +44,12 @@ trait QueryTrait
      */
     public $indexBy;
 
+    // 与Yii-Model写法保持一致，无实际意义
+    public function asArray()
+    {
+        return $this;
+    }
+
     public function index($column)
     {
         $this->index = $column;

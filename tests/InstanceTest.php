@@ -106,6 +106,7 @@ class InstanceTest extends TestCase
             ])
             ->orderBy('news_posttime desc')
             ->limit(15)
+            ->asArray()
             ->all();
         $this->assertNotEmpty($result[0]['news_origin_url']);
     }
